@@ -8,11 +8,9 @@ import (
 	"strconv"
 	"sync"
 	"time"
-)
 
-/*
- */
-import "C"
+	_ "plugin"
+)
 
 func main() {
 	if len(os.Args) != 2 {
