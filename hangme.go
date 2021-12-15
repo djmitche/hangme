@@ -4,10 +4,15 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	_ "plugin"
 	"runtime"
 	"strconv"
+	"sync"
+	"time"
 )
+
+/*
+ */
+import "C"
 
 func main() {
 	if len(os.Args) != 2 {
@@ -23,12 +28,33 @@ func main() {
 		os.Exit(0)
 	}
 	fmt.Printf("%s\n", runtime.Version())
+
+	var wg sync.WaitGroup
+	for i := 0; i < 50; i++ {
+		go func() {
+			wg.Add(1)
+			defer wg.Done()
+			hang(count)
+		}()
+	}
+	wg.Wait()
+}
+
+func hang(count int) {
 	for i := 0; i < count; i++ {
-		cmd := exec.Command("./hangme", "0")
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		timer := time.NewTimer(2 * time.Second)
+		started := make(chan struct{})
+		go func() {
+			select {
+			case <-started:
+				return
+			case <-timer.C:
+				fmt.Printf("cmd.Start did not return in timeout\n")
+			}
+		}()
+		cmd := exec.Command("ps", "-x", "-o", "etime", "-p", fmt.Sprintf("%d", os.Getpid()))
 		err := cmd.Start()
+		close(started)
 		if err != nil {
 			panic(err)
 		}
