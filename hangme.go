@@ -10,10 +10,6 @@ import (
 	"time"
 )
 
-/*
- */
-import "C"
-
 func main() {
 	if len(os.Args) != 2 {
 		fmt.Fprintf(os.Stderr, "Usage: hangme <iterations>  # 0 means exit immediately\n")
